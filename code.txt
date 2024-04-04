@@ -1,0 +1,68 @@
+#include <stdio.h>
+#include <unistd.h>
+#define MSGSIZE 16
+char* msg1 = "Hello #1";
+char* msg2 = "Hello #2";
+char* msg3 = "Hello #3";
+int main(){
+char inbuf[MSGSIZE];
+int p[2],preturn,returnstatus,i;
+returnstatus = pipe(p);
+if (returnstatus == -1){
+printf("Unable to create pipe\n");
+return 1;
+}
+preturn = fork();
+if (preturn>0){
+write(p[1],msg1,MSGSIZE);
+write(p[1],msg2,MSGSIZE);
+write(p[1],msg3,MSGSIZE);
+sleep(3);
+}
+else{
+for(int i = 0; i <3 ; i++){
+read(p[0],inbuf,MSGSIZE);
+printf("%s\n",inbuf);}}
+return 0;
+}
+
+
+#include <stdio.h>
+#include <unistd.h>
+
+
+
+int main(){
+
+int p1[2],p2[2],returnstatus1,returnstatus2,pid;
+char pipe1writemessage[20] = "Hi";
+char pipe2writemessage[20] = "Hello";
+char readmessage[20];
+returnstatus1 = pipe(p1);
+if (returnstatus1 == -1){
+printf("Unable to create pipe\n");
+return 1;
+}
+returnstatus2 = pipe(p2);
+if (returnstatus2 == -1){
+printf("Unable to create pipe\n");
+return 1;
+}
+pid = fork();
+if (pid !=0){
+close(p1[0]);
+close(p2[1]);
+printf("In parent: writeto pipe 1 - Message is %s\n",pipe1writemessage);
+write(p1[1],pipe1writemessage,sizeof(pipe1writemessage));
+read(p2[0],readmessage,sizeof(readmessage));
+printf("In Parent: Reading from pipe 2 - Messsage is %s\n",readmessage);
+}
+else{
+close(p1[1]);
+close(p2[0]);
+read(p1[0],readmessage,sizeof(readmessage));
+printf("In Child: reading from pipe 1 - Message is %s\n",readmessage);
+printf("In Child: writing to from pipe 2 - Messsage is %s\n",pipe2writemessage);
+write(p2[1],pipe2writemessage,sizeof(pipe2writemessage));
+}
+return 0; }
